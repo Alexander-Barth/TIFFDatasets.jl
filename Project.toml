@@ -1,0 +1,13 @@
+name = "TIFFDatasets"
+uuid = "8d837e6f-fc51-4c76-affd-c130faf94be7"
+authors = ["Alexander Barth <barth.alexander@gmail.com> and contributors"]
+version = "0.1.0"
+
+[compat]
+julia = "1.6"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
