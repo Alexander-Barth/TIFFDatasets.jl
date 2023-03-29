@@ -1,0 +1,6 @@
+
+## TIFFDatasets
+
+```@autodocs
+Modules = [TIFFDatasets]
+```

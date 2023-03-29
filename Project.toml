@@ -12,6 +12,12 @@ JSON3 = "0f8b85d8-7281-11e9-16c2-39a750bddbf1"
 Proj = "c94c279d-25a6-4763-9509-64d165bea63e"
 
 [compat]
+ArchGDAL = "0.10"
+CommonDataModel = "0.2"
+DataStructures = "0.18"
+GDAL = "1"
+JSON3 = "1"
+Proj = "1"
 julia = "1.6"
 
 [extras]
