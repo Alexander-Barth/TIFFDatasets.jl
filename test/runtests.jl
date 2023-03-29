@@ -1,6 +1,6 @@
 using TIFFDatasets
 using Test
-
+using Downloads: download
 
 function test_show(ds,expect)
     io = IOBuffer()
