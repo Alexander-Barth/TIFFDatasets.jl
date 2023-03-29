@@ -32,6 +32,9 @@ end
     test_show(ds["band1"],"grid_mapping")
     test_show(ds["band2"],"grid_mapping")
 
+    @test_throws KeyError ds["does_not_exists"]
+    @test ds["crs"][:] isa Integer
+
     ds = TIFFDataset(fname,catbands = true)
 
     @test haskey(ds.dim,"bands")
