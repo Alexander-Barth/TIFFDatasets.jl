@@ -1,4 +1,5 @@
 [![Build Status](https://github.com/Alexander-Barth/TIFFDatasets.jl/workflows/CI/badge.svg)](https://github.com/Alexander-Barth/TIFFDatasets.jl/actions)
+[![codecov.io](http://codecov.io/github/Alexander-Barth/TIFFDatasets.jl/coverage.svg?branch=main)](http://codecov.io/github/Alexander-Barth/TIFFDatasets.jl?branch=main)
 [![documentation dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://alexander-barth.github.io/TIFFDatasets.jl/dev/)
 
 # TIFFDatasets
