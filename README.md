@@ -1,6 +1,6 @@
 # TIFFDatasets
 
-TIFFDatasets pretends that a GeoTIFF file is NetCDF file accessible
+TIFFDatasets pretends that a GeoTIFF file is a NetCDF file that is accessible
 with the same API as [NCDatasets](https://github.com/Alexander-Barth/NCDatasets.jl):
 
 ```julia
@@ -70,9 +70,9 @@ Variables
 [...]
 ```
 
-The dataset `ds` will also have the virtual variables `x`, `y` and `lon`, `lat`
-representing the projected coordinates (as defined in the GeoTIFF file) and the
-corresponding longitude and latitude.
+The dataset `ds` will also have the virtual variables `x`, `y`, `lon` and `lat`
+(unless there is no projection defined in the GeoTiff file)
+representing the projected coordinates and the corresponding longitude and latitude.
 The projection information as the so-called [Well Known Text](https://en.wikipedia.org/wiki/Well-known_text_representation_of_coordinate_reference_systems) is available as attribute `crs_wkt` of the virtural variable `crs` following the [CF Conventions](https://cfconventions.org/cf-conventions/cf-conventions.html#use-of-the-crs-well-known-text-format).
 
 
