@@ -1,14 +1,11 @@
 module TIFFDatasets
 
+import ArchGDAL
 import Base: size, keys, getindex
-using ArchGDAL
-using GDAL
-using Proj
-using DataStructures
-import CommonDataModel
-import CommonDataModel: AbstractDataset, AbstractVariable, path, groupname, dimnames, name
-
-
+import CommonDataModel: AbstractDataset, AbstractVariable, path, dimnames, name
+using DataStructures: OrderedDict
+import GDAL
+import Proj
 
 struct TIFFDataset{T,N} <: AbstractDataset
     fname::String
@@ -20,7 +17,7 @@ struct TIFFDataset{T,N} <: AbstractDataset
     height::Int
     trans::Proj.Transformation
     crs_wkt::String
-    gt::Vector{Float64}
+    geotransform::Vector{Float64}
     dim::OrderedDict{String,Int64}
     attrib::OrderedDict{String,Any}
     group::OrderedDict{String,Any}
@@ -45,12 +42,9 @@ struct CRS{Td,Nd} <: AbstractVariable{Int32,0}
     attrib::OrderedDict{String,Any}
 end
 
-CommonDataModel.path(ds::Dataset) = ds.fname
+path(ds::Dataset) = ds.fname
 
-groupname(ds::Dataset) = "/"
-
-
-aligned_grid(ds::Dataset) = (ds.gt[3] == 0) && (ds.gt[5] == 0)
+aligned_grid(ds::Dataset) = (ds.geotransform[3] == 0) && (ds.geotransform[5] == 0)
 
 function cf_crs_attributes!(crs_wkt,attrib; geotransform = nothing)
     projparam(name; default = 0.) = GDAL.osrgetprojparm(gdal_proj.ptr,name,default,C_NULL)
@@ -81,8 +75,8 @@ function cf_crs_attributes!(crs_wkt,attrib; geotransform = nothing)
     end
 
     attrib["longitude_of_prime_meridian"] = GDAL.osrgetprimemeridian(gdal_proj.ptr,C_NULL)
-    attrib["semi_major_axis"] = ArchGDAL.GDAL.osrgetsemimajor(gdal_proj.ptr,C_NULL)
-    attrib["inverse_flattening"] = ArchGDAL.GDAL.osrgetinvflattening(gdal_proj.ptr,C_NULL)
+    attrib["semi_major_axis"] = GDAL.osrgetsemimajor(gdal_proj.ptr,C_NULL)
+    attrib["inverse_flattening"] = GDAL.osrgetinvflattening(gdal_proj.ptr,C_NULL)
     attrib["crs_wkt"] = crs_wkt
 
     if !isnothing(geotransform)
@@ -96,13 +90,28 @@ end
 
 
 """
+    ds = TIFFDataset(fname::AbstractString; varname = "band",
+                     projection = "EPSG:4326",
+                     catbands = false,
+                     dimnames = ("cols","rows","bands"))
 
-if catbands is true, it is the user's responsibility to check that
-all bands have the same no-data value, offset and scale factor.
+Create a data set structure from the GeoTIFF file name `fname`
+using [ArchGDAL](https://github.com/yeesian/ArchGDAL.jl). The data variable will be called `varname` (followed by the band number).
+The dataset `ds` will also have the virtual variables `x`, `y` and `lon`, `lat`
+representing the projected coordinates (as defined in the GeoTIFF file) and the
+corresponding longitude/latitude (using the projection as defined
+by the `projection` parameter). The names of the dimensions
+can be adapted using the parameter `dimnames`.
+
+Setting `catbands` to true, will concatenate all bands into a single
+variable called `varname`. If `catbands` is true, it is the user's
+responsibility to check that all bands have the same no-data value,
+offset and scale factor.
 Check with the command line tool `gdalinfo filename` or ArchGDAL.
-If this is not the case, catbands = true should not be used.
+If this is not the case, `catbands = true` should not be used.
 """
-function TIFFDataset(fname; varname = "band", dest = "EPSG:4326",
+function TIFFDataset(fname::AbstractString; varname = "band",
+                     projection = "EPSG:4326",
                      catbands = false,
                      dimnames = ("cols","rows","bands"))
     dataset = ArchGDAL.read(fname)
@@ -111,8 +120,8 @@ function TIFFDataset(fname; varname = "band", dest = "EPSG:4326",
     height = ArchGDAL.height(dataset)
     nraster = ArchGDAL.nraster(dataset)
     crs_wkt = ArchGDAL.importWKT(proj)
-    gt = ArchGDAL.getgeotransform(dataset)
-    trans = Proj.Transformation(ArchGDAL.toPROJ4(ArchGDAL.importWKT(proj)), dest)
+    geotransform = ArchGDAL.getgeotransform(dataset)
+    trans = Proj.Transformation(ArchGDAL.toPROJ4(ArchGDAL.importWKT(proj)), projection)
     T = ArchGDAL.pixeltype(dataset)
     attrib = OrderedDict{String,Any}()
     dim = OrderedDict{String,Int64}(
@@ -126,7 +135,7 @@ function TIFFDataset(fname; varname = "band", dest = "EPSG:4326",
     if catbands
         dim[dimnames[3]] = nraster
     end
-    #@show dim
+
     return TIFFDataset{T,N}(
         fname,
         dataset,
@@ -137,7 +146,7 @@ function TIFFDataset(fname; varname = "band", dest = "EPSG:4326",
         height,
         trans,
         proj,
-        gt,
+        geotransform,
         dim,
         attrib,
         group,
@@ -189,7 +198,7 @@ function Base.getindex(ds::Dataset{T,N},varname::Union{AbstractString, Symbol}) 
         cf_variable_attrib!(band,attrib)
         return Variable{T,N}(ds,index,attrib)
     elseif vn == :crs
-        cf_crs_attributes!(ds.crs_wkt,attrib; geotransform = ds.gt)
+        cf_crs_attributes!(ds.crs_wkt,attrib; geotransform = ds.geotransform)
         return CRS(ds,attrib)
     elseif vn in (:lon,:lat)
         if vn == :lon
@@ -255,7 +264,7 @@ name(v::Coord) = string(v.name)
 
 
 @inline function xy_geo(ds::Dataset,i,j)
-    gt = ds.gt
+    gt = ds.geotransform
     shift = 0.5 # center
     x_geo = gt[1] + (i-shift) * gt[2] + (j-shift) * gt[3]
     y_geo = gt[4] + (i-shift) * gt[5] + (j-shift) * gt[6]
@@ -272,8 +281,7 @@ function Base.size(v::Coord)
     end
 end
 
-
-function CommonDataModel.dimnames(v::Coord)
+function dimnames(v::Coord)
     N = ndims(v)
     if N == 2
         return v.parent.dimnames[1:N]
