@@ -3,6 +3,13 @@ uuid = "8d837e6f-fc51-4c76-affd-c130faf94be7"
 authors = ["Alexander Barth <barth.alexander@gmail.com> and contributors"]
 version = "0.1.0"
 
+[deps]
+ArchGDAL = "c9ce4bd3-c3d5-55b8-8973-c0e20141b8c3"
+CommonDataModel = "1fbeeb36-5f17-413c-809b-666fb144f157"
+DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
+GDAL = "add2ef01-049f-52c4-9ee2-e494f65e021a"
+Proj = "c94c279d-25a6-4763-9509-64d165bea63e"
+
 [compat]
 julia = "1.6"
 
