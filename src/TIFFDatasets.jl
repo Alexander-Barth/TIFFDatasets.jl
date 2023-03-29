@@ -6,8 +6,9 @@ import CommonDataModel: AbstractDataset, AbstractVariable, path, dimnames, name
 using DataStructures: OrderedDict
 import GDAL
 import Proj
+import JSON3
 
-struct TIFFDataset{T,N} <: AbstractDataset
+struct TIFFDataset{T,N,Ttrans} <: AbstractDataset
     fname::String
     dataset::ArchGDAL.IDataset
     dimnames::NTuple{3,Symbol}
@@ -15,7 +16,7 @@ struct TIFFDataset{T,N} <: AbstractDataset
     nraster::Int
     width::Int
     height::Int
-    trans::Proj.Transformation
+    trans::Ttrans
     crs_wkt::String
     geotransform::Vector{Float64}
     dim::OrderedDict{String,Int64}
@@ -50,10 +51,17 @@ function cf_crs_attributes!(crs_wkt,attrib; geotransform = nothing)
     projparam(name; default = 0.) = GDAL.osrgetprojparm(gdal_proj.ptr,name,default,C_NULL)
 
     gdal_proj = ArchGDAL.importWKT(crs_wkt)
-    grid_mapping_name = GDAL.osrgetattrvalue(gdal_proj.ptr,"PROJECTION",0) |> lowercase
+    gdal_projection = GDAL.osrgetattrvalue(gdal_proj.ptr,"PROJECTION",0)
+    grid_mapping_name = nothing
 
-    attrib["grid_mapping_name"] = grid_mapping_name
+    #pp = Proj.proj_create_from_wkt(crs_wkt)
+    #pj = JSON3.read(Proj.proj_as_projjson(pp))
+    #@show pj[:coordinate_system][:axis][1][:unit]
 
+    if !isnothing(gdal_projection)
+        grid_mapping_name = lowercase(gdal_projection)
+        attrib["grid_mapping_name"] = grid_mapping_name
+    end
 
     if grid_mapping_name == "transverse_mercator"
         # mapping from
@@ -115,13 +123,21 @@ function TIFFDataset(fname::AbstractString; varname = "band",
                      catbands = false,
                      dimnames = ("cols","rows","bands"))
     dataset = ArchGDAL.read(fname)
-    proj = ArchGDAL.getproj(dataset)
     width = ArchGDAL.width(dataset)
     height = ArchGDAL.height(dataset)
     nraster = ArchGDAL.nraster(dataset)
-    crs_wkt = ArchGDAL.importWKT(proj)
+    proj = ArchGDAL.getproj(dataset)
+
+    if proj == ""
+        @debug "no projection defined in file '$fname'. If you have GDAL installed, you can check with: gdalinfo '$fname'"
+        trans = nothing
+        crs_wkt = ""
+    else
+        crs_wkt = ArchGDAL.importWKT(proj)
+        trans = Proj.Transformation(ArchGDAL.toPROJ4(ArchGDAL.importWKT(proj)), projection)
+    end
+
     geotransform = ArchGDAL.getgeotransform(dataset)
-    trans = Proj.Transformation(ArchGDAL.toPROJ4(ArchGDAL.importWKT(proj)), projection)
     T = ArchGDAL.pixeltype(dataset)
     attrib = OrderedDict{String,Any}()
     dim = OrderedDict{String,Int64}(
@@ -136,7 +152,7 @@ function TIFFDataset(fname::AbstractString; varname = "band",
         dim[dimnames[3]] = nraster
     end
 
-    return TIFFDataset{T,N}(
+    return TIFFDataset{T,N,typeof(trans)}(
         fname,
         dataset,
         Symbol.(dimnames),
@@ -154,9 +170,10 @@ function TIFFDataset(fname::AbstractString; varname = "band",
 end
 
 
+geo_referenced(ds) = !isnothing(ds.trans)
 
 function Base.keys(ds::Dataset{T,N}) where {T,N}
-    return ["lon","lat","x","y","crs",
+    return [(geo_referenced(ds) ? ("lon","lat","x","y","crs") : ())...,
             (if N == 3
                  (string(ds.varname),)
              else
@@ -185,22 +202,27 @@ end
 function Base.getindex(ds::Dataset{T,N},varname::Union{AbstractString, Symbol}) where {T,N}
     vn = Symbol(varname)
     attrib = OrderedDict{String,Any}()
+    geo_ref = geo_referenced(ds)
 
     if (vn == ds.varname) && (N == 3)
-        attrib["grid_mapping"] = "crs"
+        if geo_ref
+            attrib["grid_mapping"] = "crs"
+        end
         band = ArchGDAL.getband(ds.dataset,1)
         cf_variable_attrib!(band,attrib)
         return Variable{T,N}(ds,0,attrib)
     elseif (startswith(string(varname),string(ds.varname))) && (N == 2)
-        attrib["grid_mapping"] = "crs"
+        if geo_ref
+            attrib["grid_mapping"] = "crs"
+        end
         index = parse(Int,replace(string(varname),string(ds.varname)=>""))
         band = ArchGDAL.getband(ds.dataset,index)
         cf_variable_attrib!(band,attrib)
         return Variable{T,N}(ds,index,attrib)
-    elseif vn == :crs
+    elseif (vn == :crs) && geo_ref
         cf_crs_attributes!(ds.crs_wkt,attrib; geotransform = ds.geotransform)
         return CRS(ds,attrib)
-    elseif vn in (:lon,:lat)
+    elseif vn in (:lon,:lat) && geo_ref
         if vn == :lon
             attrib["standard_name"] = "longitude"
             attrib["units"] = "degrees_east"
@@ -209,13 +231,13 @@ function Base.getindex(ds::Dataset{T,N},varname::Union{AbstractString, Symbol}) 
             attrib["units"] = "degrees_north"
         end
         return Coord{Float64,2,T,N}(ds,vn,attrib)
-    elseif vn in (:x,:y)
+    elseif vn in (:x,:y) && geo_ref
         if vn == :x
             attrib["standard_name"] = "projection_x_coordinate"
-            attrib["units"] = "m" # always the case?
+            #attrib["units"] = "m" # always the case? -> no
         elseif vn == :y
             attrib["standard_name"] = "projection_y_coordinate"
-            attrib["units"] = "m" # always the case?
+            #attrib["units"] = "m" # always the case? -> no
         end
 
         Nc = (aligned_grid(ds) ? 1 : 2)
