@@ -1,3 +1,6 @@
+[![Build Status](https://github.com/Alexander-Barth/TIFFDatasets.jl/workflows/CI/badge.svg)](https://github.com/Alexander-Barth/TIFFDatasets.jl/actions)
+[![documentation dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://alexander-barth.github.io/TIFFDatasets.jl/dev/)
+
 # TIFFDatasets
 
 TIFFDatasets pretends that a GeoTIFF file is a NetCDF file that is accessible
