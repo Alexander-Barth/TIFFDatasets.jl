@@ -258,7 +258,7 @@ end
     return ArchGDAL.getband(v.parent.dataset, k)[i,j]
 end
 
-@inline function Base.getindex(v::Variable{T,3},i,j,k::AbstractRange) where T
+@inline function Base.getindex(v::Variable{T,3},i::Union{AbstractRange,Colon},j::Union{AbstractRange,Colon},k::AbstractRange) where T
     return cat((v[i,j,k_] for k_ = k)...,dims=3)
 end
 

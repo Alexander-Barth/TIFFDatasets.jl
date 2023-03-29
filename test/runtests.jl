@@ -37,6 +37,10 @@ end
     @test haskey(ds.dim,"bands")
     @test "band" in keys(ds)
 
+    data = ds["band"][:,:,:]
+    @test data[1,1,1] == ds["band"][1,1,1]
+    @test data[1,1,1:2] == ds["band"][1,1,1:2]
+    @test data[:,:,1:2] == ds["band"][:,:,1:2]
 
     test_show(ds["band"],"grid_mapping")
     test_show(ds,"Variables")
