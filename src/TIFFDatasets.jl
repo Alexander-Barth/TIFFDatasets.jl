@@ -2,7 +2,7 @@ module TIFFDatasets
 
 import ArchGDAL
 import Base: size, keys, getindex
-import CommonDataModel: AbstractDataset, AbstractVariable, path, dimnames, name
+import CommonDataModel: AbstractDataset, AbstractVariable, path, dimnames, name, attribnames, attrib, dim
 using DataStructures: OrderedDict
 import GDAL
 import Proj
@@ -21,7 +21,6 @@ struct TIFFDataset{T,N,Ttrans} <: AbstractDataset
     geotransform::Vector{Float64}
     dim::OrderedDict{String,Int64}
     attrib::OrderedDict{String,Any}
-    group::OrderedDict{String,Any}
 end
 
 const Dataset = TIFFDataset
@@ -42,6 +41,16 @@ struct CRS{Td,Nd} <: AbstractVariable{Int32,0}
     parent::TIFFDataset{Td,Nd}
     attrib::OrderedDict{String,Any}
 end
+
+
+
+attribnames(ds::Union{TIFFDataset,Variable,CRS,Coord}) = keys(ds.attrib)
+attrib(ds::Union{TIFFDataset,Variable,CRS,Coord},name::AbstractString) = ds.attrib[name]
+
+
+dimnames(ds::TIFFDataset) = keys(ds.dim)
+dim(ds::Union{TIFFDataset,Variable,CRS,Coord},name::AbstractString) = ds.dim[name]
+
 
 path(ds::Dataset) = ds.fname
 
@@ -145,7 +154,6 @@ function TIFFDataset(fname::AbstractString; varname = "band",
         dimnames[2] => height,
     )
 
-    group = OrderedDict{String,Any}()
     N = (catbands ? 3 : 2)
 
     if catbands
@@ -165,7 +173,6 @@ function TIFFDataset(fname::AbstractString; varname = "band",
         geotransform,
         dim,
         attrib,
-        group,
     )
 end
 
