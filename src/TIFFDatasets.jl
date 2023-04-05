@@ -2,7 +2,12 @@ module TIFFDatasets
 
 import ArchGDAL
 import Base: size, keys, getindex
-import CommonDataModel: AbstractDataset, AbstractVariable, path, dimnames, name, attribnames, attrib, dim
+import CommonDataModel: AbstractDataset, AbstractVariable
+    path, name,
+    attribnames, attrib,
+    dimnames, dim,
+    varnames, variable, cfvariable
+
 using DataStructures: OrderedDict
 import GDAL
 import Proj
@@ -44,13 +49,11 @@ end
 
 
 
-attribnames(ds::Union{TIFFDataset,Variable,CRS,Coord}) = keys(ds.attrib)
-attrib(ds::Union{TIFFDataset,Variable,CRS,Coord},name::AbstractString) = ds.attrib[name]
+attribnames(ds::Union{Dataset,Variable,CRS,Coord}) = keys(ds.attrib)
+attrib(ds::Union{Dataset,Variable,CRS,Coord},name::AbstractString) = ds.attrib[name]
 
-
-dimnames(ds::TIFFDataset) = keys(ds.dim)
+dimnames(ds::Dataset) = keys(ds.dim)
 dim(ds::Union{TIFFDataset,Variable,CRS,Coord},name::AbstractString) = ds.dim[name]
-
 
 path(ds::Dataset) = ds.fname
 
@@ -176,10 +179,9 @@ function TIFFDataset(fname::AbstractString; varname = "band",
     )
 end
 
-
 geo_referenced(ds) = !isnothing(ds.trans)
 
-function Base.keys(ds::Dataset{T,N}) where {T,N}
+function varnames(ds::Dataset{T,N}) where {T,N}
     return [(geo_referenced(ds) ? ("lon","lat","x","y","crs") : ())...,
             (if N == 3
                  (string(ds.varname),)
@@ -188,6 +190,8 @@ function Base.keys(ds::Dataset{T,N}) where {T,N}
              end)...
                  ]
 end
+
+Base.keys(ds::Dataset) = varnames(ds)
 
 function cf_variable_attrib!(band,attrib)
     fillvalue = ArchGDAL.getnodatavalue(band)
@@ -206,7 +210,7 @@ function cf_variable_attrib!(band,attrib)
     end
 end
 
-function Base.getindex(ds::Dataset{T,N},varname::Union{AbstractString, Symbol}) where {T,N}
+function variable(ds::Dataset{T,N},varname::AbstractString) where {T,N}
     vn = Symbol(varname)
     attrib = OrderedDict{String,Any}()
     geo_ref = geo_referenced(ds)
@@ -253,6 +257,9 @@ function Base.getindex(ds::Dataset{T,N},varname::Union{AbstractString, Symbol}) 
         throw(KeyError("$varname not found"))
     end
 end
+
+
+Base.getindex(ds::Dataset,varname::Union{AbstractString, Symbol}) = cfvariable(ds,varname)
 
 Base.size(v::Variable{T,N}) where {T,N} = (v.parent.width,v.parent.height,v.parent.nraster)[1:N]
 

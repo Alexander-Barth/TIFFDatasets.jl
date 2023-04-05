@@ -1,6 +1,7 @@
 using TIFFDatasets
 using Test
 using Downloads: download
+using NCDatasets
 
 function test_show(ds,expect)
     io = IOBuffer()
@@ -35,8 +36,19 @@ end
     @test_throws KeyError ds["does_not_exists"]
     @test ds["crs"][:] isa Integer
 
-    ds = TIFFDataset(fname,catbands = true)
+    # convert to NetCDF
+    ncfile = tempname()
+    @time NCDatasets.write(ncfile,ds)
+    ncds = NCDataset(ncfile)
 
+    geotiff_band1 = ds["band1"][:,:]
+    nc_band1 = ncds["band1"][:,:]
+    @test geotiff_band1 == nc_band1
+    @test collect(ncds["band1"].attrib) == collect(ds["band1"].attrib)
+
+    # concatenate bands
+
+    ds = TIFFDataset(fname,catbands = true)
     @test haskey(ds.dim,"bands")
     @test "band" in keys(ds)
 
@@ -60,4 +72,5 @@ end
 
     test_show(ds["crs"],"crs_wkt")
     @test ds["crs"].attrib["crs_wkt"] isa String
+
 end
