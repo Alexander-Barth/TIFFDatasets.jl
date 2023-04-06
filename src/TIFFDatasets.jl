@@ -2,7 +2,7 @@ module TIFFDatasets
 
 import ArchGDAL
 import Base: size, keys, getindex
-import CommonDataModel: AbstractDataset, AbstractVariable
+import CommonDataModel: AbstractDataset, AbstractVariable,
     path, name,
     attribnames, attrib,
     dimnames, dim,
