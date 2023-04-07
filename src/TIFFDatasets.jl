@@ -133,7 +133,11 @@ If this is not the case, `catbands = true` should not be used.
 function TIFFDataset(fname::AbstractString; varname = "band",
                      projection = "EPSG:4326",
                      catbands = false,
-                     dimnames = ("cols","rows","bands"))
+                     dimnames = ("cols","rows","bands"),
+                     attrib = OrderedDict{String,Any}(
+                         "Conventions" => "CF-1.8",
+                     ),
+                     )
     dataset = ArchGDAL.read(fname)
     width = ArchGDAL.width(dataset)
     height = ArchGDAL.height(dataset)
@@ -151,7 +155,7 @@ function TIFFDataset(fname::AbstractString; varname = "band",
 
     geotransform = ArchGDAL.getgeotransform(dataset)
     T = ArchGDAL.pixeltype(dataset)
-    attrib = OrderedDict{String,Any}()
+
     dim = OrderedDict{String,Int64}(
         dimnames[1] => width,
         dimnames[2] => height,

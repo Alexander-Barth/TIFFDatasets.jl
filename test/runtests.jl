@@ -74,3 +74,8 @@ end
     @test ds["crs"].attrib["crs_wkt"] isa String
 
 end
+
+#=
+fname = download("https://data-assimilation.net/upload/Alex/TIFF/S2_1-12-19_48MYU_0.tif")
+@time NCDatasets.write("tmp.nc",TIFFDataset(fname))
+=#
