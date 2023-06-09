@@ -127,7 +127,7 @@ Setting `catbands` to true, will concatenate all bands into a single
 variable called `varname`. If `catbands` is true, it is the user's
 responsibility to check that all bands have the same no-data value,
 offset and scale factor.
-Check with the command line tool `gdalinfo filename` or ArchGDAL.
+Check with the command line tool `gdalinfo filename` or use ArchGDAL to inspect the file.
 If this is not the case, `catbands = true` should not be used.
 """
 function TIFFDataset(fname::AbstractString; varname = "band",
