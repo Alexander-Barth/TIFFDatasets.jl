@@ -38,7 +38,9 @@ end
 
     # convert to NetCDF
     ncfile = tempname()
-    @time NCDatasets.write(ncfile,ds)
+    NCDataset(ncfile,"c") do dsnc
+        write(dsnc,ds)
+    end
     ncds = NCDataset(ncfile)
 
     geotiff_band1 = ds["band1"][:,:]
