@@ -4,4 +4,4 @@ NCDatasets = "85f8d34a-cbdd-5861-8df4-14fed0d494ab"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [compat]
-NCDatasets = "0.12.17"
+NCDatasets = "0.13"
