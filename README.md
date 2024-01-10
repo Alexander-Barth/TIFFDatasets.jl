@@ -5,7 +5,7 @@
 # TIFFDatasets
 
 
-This package implements the [CommonDataModel.jl](https://github.com/JuliaGeo/CommonDataModel.jl) interface for GeoTIFF files, which mean that the datasets can be accessed in the same way as netCDF files opened with [NCDatasets.jl](https://github.com/Alexander-Barth/NCDatasets.jl) or GRIB files opened with [GRIBDatasets](https://github.com/JuliaGeo/GRIBDatasets.jl).
+This package implements the [CommonDataModel.jl](https://github.com/JuliaGeo/CommonDataModel.jl) interface for GeoTIFF files, which means that the datasets can be accessed in the same way as netCDF files opened with [NCDatasets.jl](https://github.com/Alexander-Barth/NCDatasets.jl) or GRIB files opened with [GRIBDatasets](https://github.com/JuliaGeo/GRIBDatasets.jl).
 
 ```julia
 fname = download("https://data-assimilation.net/upload/Alex/TIFF/S2_1-12-19_48MYU_0.tif")
