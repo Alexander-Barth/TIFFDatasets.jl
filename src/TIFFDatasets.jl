@@ -2,18 +2,26 @@ module TIFFDatasets
 
 import ArchGDAL
 import Base: size, keys, getindex
-import CommonDataModel: AbstractDataset, AbstractVariable,
-    path, name,
-    attribnames, attrib,
-    dimnames, dim,
-    varnames, variable, cfvariable
+import CommonDataModel:
+    AbstractDataset,
+    AbstractVariable,
+    attrib,
+    attribnames,
+    cfvariable,
+    dim,
+    dimnames,
+    maskingvalue,
+    name,
+    path,
+    variable,
+    varnames
 
 using DataStructures: OrderedDict
 import GDAL
 import Proj
 import JSON3
 
-struct TIFFDataset{T,N,Ttrans} <: AbstractDataset
+struct TIFFDataset{T,N,Ttrans,Tmaskingvalue} <: AbstractDataset
     fname::String
     dataset::ArchGDAL.IDataset
     dimnames::NTuple{3,Symbol}
@@ -26,6 +34,7 @@ struct TIFFDataset{T,N,Ttrans} <: AbstractDataset
     geotransform::Vector{Float64}
     dim::OrderedDict{String,Int64}
     attrib::OrderedDict{String,Any}
+    maskingvalue::Tmaskingvalue
 end
 
 const Dataset = TIFFDataset
@@ -56,6 +65,7 @@ dimnames(ds::Dataset) = keys(ds.dim)
 dim(ds::Union{TIFFDataset,Variable,CRS,Coord},name::AbstractString) = ds.dim[name]
 
 path(ds::Dataset) = ds.fname
+maskingvalue(ds::Dataset) = ds.maskingvalue
 
 aligned_grid(ds::Dataset) = (ds.geotransform[3] == 0) && (ds.geotransform[5] == 0)
 
@@ -195,6 +205,7 @@ function TIFFDataset(fname::AbstractString; varname = "band",
                      attrib = OrderedDict{String,Any}(
                          "Conventions" => "CF-1.8",
                      ),
+                     maskingvalue = missing,
                      )
     dataset = ArchGDAL.read(fname)
     width = ArchGDAL.width(dataset)
@@ -225,7 +236,7 @@ function TIFFDataset(fname::AbstractString; varname = "band",
         dim[dimnames[3]] = nraster
     end
 
-    return TIFFDataset{T,N,typeof(trans)}(
+    return TIFFDataset{T,N,typeof(trans),typeof(maskingvalue)}(
         fname,
         dataset,
         Symbol.(dimnames),
@@ -238,6 +249,7 @@ function TIFFDataset(fname::AbstractString; varname = "band",
         geotransform,
         dim,
         attrib,
+        maskingvalue,
     )
 end
 
@@ -258,7 +270,7 @@ Base.keys(ds::Dataset) = varnames(ds)
 function cf_variable_attrib!(band,attrib)
     fillvalue = ArchGDAL.getnodatavalue(band)
     if !isnothing(fillvalue)
-        attrib["FillValue"] = fillvalue
+        attrib["_FillValue"] = fillvalue
     end
 
     add_offset = ArchGDAL.getoffset(band)

@@ -13,7 +13,7 @@ Proj = "c94c279d-25a6-4763-9509-64d165bea63e"
 
 [compat]
 ArchGDAL = "0.10"
-CommonDataModel = "0.2"
+CommonDataModel = "0.3.3"
 DataStructures = "0.18"
 GDAL = "1"
 JSON3 = "1"
