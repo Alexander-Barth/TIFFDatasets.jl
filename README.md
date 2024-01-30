@@ -5,9 +5,11 @@
 # TIFFDatasets
 
 
-This package implements the [CommonDataModel.jl](https://github.com/JuliaGeo/CommonDataModel.jl) interface for GeoTIFF files, which mean that the datasets can be accessed in the same way as netCDF files opened with [NCDatasets.jl](https://github.com/Alexander-Barth/NCDatasets.jl) or GRIB files opened with [GRIBDatasets](https://github.com/JuliaGeo/GRIBDatasets.jl).
+This package implements the [CommonDataModel.jl](https://github.com/JuliaGeo/CommonDataModel.jl) interface for GeoTIFF files, which means that the datasets can be accessed in the same way as netCDF files opened with [NCDatasets.jl](https://github.com/Alexander-Barth/NCDatasets.jl) or GRIB files opened with [GRIBDatasets](https://github.com/JuliaGeo/GRIBDatasets.jl).
 
 ```julia
+using TIFFDatasets
+using Downloads: download
 fname = download("https://data-assimilation.net/upload/Alex/TIFF/S2_1-12-19_48MYU_0.tif")
 ds = TIFFDataset(fname)
 ```
@@ -80,10 +82,22 @@ representing the projected coordinates and the corresponding longitude and latit
 The projection information as the so-called [Well Known Text](https://en.wikipedia.org/wiki/Well-known_text_representation_of_coordinate_reference_systems) is available as attribute `crs_wkt` of the virtural variable `crs` following the [CF Conventions](https://cfconventions.org/cf-conventions/cf-conventions.html#use-of-the-crs-well-known-text-format).
 
 
-For example, the first band and the corresponding lon/lat coordinates can be loaded with:
+For example, the first band and the corresponding lon/lat coordinates can be loaded with using the API of [CommonDataModel.jl](https://github.com/JuliaGeo/CommonDataModel.jl):
 
 ```julia
 data = ds["band1"][:,:];
 lon = ds["lon"][:,:];
 lat = ds["lat"][:,:];
+# See
+# https://cfconventions.org/cf-conventions/cf-conventions.html#appendix-grid-mappings
+grid_mapping_name = ds["crs"].attrib["grid_mapping_name"]
+```
+
+Using all bands as single 3D array can be done using `catbands = true`, for example:
+
+```julia
+ds = TIFFDataset(fname,catbands = true)
+size(ds["band"]);
+# outputs (265, 265, 11) as there are 11 bands
+data_all_bands = ds["band"][:,:,:];
 ```
