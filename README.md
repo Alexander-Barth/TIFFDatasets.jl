@@ -5,7 +5,7 @@
 # TIFFDatasets
 
 
-This package implements the [CommonDataModel.jl](https://github.com/JuliaGeo/CommonDataModel.jl) interface for GeoTIFF files, which means that the datasets can be accessed in the same way as netCDF files opened with [NCDatasets.jl](https://github.com/Alexander-Barth/NCDatasets.jl) or GRIB files opened with [GRIBDatasets](https://github.com/JuliaGeo/GRIBDatasets.jl).
+This package implements the [CommonDataModel.jl](https://github.com/JuliaGeo/CommonDataModel.jl) interface for TIFF files, which means that the datasets can be accessed in the same way as netCDF files opened with [NCDatasets.jl](https://github.com/Alexander-Barth/NCDatasets.jl) or GRIB files opened with [GRIBDatasets](https://github.com/JuliaGeo/GRIBDatasets.jl). For GeoTIFF files the project information will be available as additional variables following the [CF Conventions](https://cfconventions.org/cf-conventions/cf-conventions.html#use-of-the-crs-well-known-text-format).
 
 ```julia
 using TIFFDatasets
