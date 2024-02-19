@@ -8,6 +8,7 @@ import CommonDataModel:
     attrib,
     attribnames,
     cfvariable,
+    dataset,
     dim,
     dimnames,
     maskingvalue,
@@ -68,6 +69,8 @@ path(ds::Dataset) = ds.fname
 maskingvalue(ds::Dataset) = ds.maskingvalue
 
 aligned_grid(ds::Dataset) = (ds.geotransform[3] == 0) && (ds.geotransform[5] == 0)
+
+dataset(v::Union{Variable,CRS,Coord}) = v.parent
 
 function cf_crs_attributes!(crs_wkt,attrib; geotransform = nothing)
     projparam(name; default = 0.) = GDAL.osrgetprojparm(gdal_proj.ptr,name,default,C_NULL)
