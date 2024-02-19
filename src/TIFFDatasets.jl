@@ -22,6 +22,8 @@ import GDAL
 import Proj
 import JSON3
 
+const SymbolOrString = Union{AbstractString, Symbol}
+
 struct TIFFDataset{T,N,Ttrans,Tmaskingvalue} <: AbstractDataset
     fname::String
     dataset::ArchGDAL.IDataset
@@ -60,10 +62,12 @@ end
 
 
 attribnames(ds::Union{Dataset,Variable,CRS,Coord}) = keys(ds.attrib)
-attrib(ds::Union{Dataset,Variable,CRS,Coord},name::AbstractString) = ds.attrib[name]
+attrib(ds::Union{Dataset,Variable,CRS,Coord},name::SymbolOrString) =
+    ds.attrib[String(name)]
 
-dimnames(ds::Dataset) = keys(ds.dim)
-dim(ds::Union{TIFFDataset,Variable,CRS,Coord},name::AbstractString) = ds.dim[name]
+dimnames(ds::Dataset) = String.(keys(ds.dim))
+dim(ds::Union{TIFFDataset,Variable,CRS,Coord},name::SymbolOrString) =
+    ds.dim[String(name)]
 
 path(ds::Dataset) = ds.fname
 maskingvalue(ds::Dataset) = ds.maskingvalue
@@ -287,7 +291,7 @@ function cf_variable_attrib!(band,attrib)
     end
 end
 
-function variable(ds::Dataset{T,N},varname::AbstractString) where {T,N}
+function variable(ds::Dataset{T,N},varname::SymbolOrString) where {T,N}
     vn = Symbol(varname)
     attrib = OrderedDict{String,Any}()
     geo_ref = geo_referenced(ds)
@@ -362,7 +366,7 @@ function Base.getindex(v::Variable{T,3},indices...) where T
     return v[:,:,:][indices...]
 end
 
-dimnames(v::Variable) = v.parent.dimnames[1:ndims(v)]
+dimnames(v::Variable) = String.(v.parent.dimnames[1:ndims(v)])
 
 function name(v::Variable{T,N}) where {T,N}
     if N == 3
@@ -397,11 +401,11 @@ end
 function dimnames(v::Coord)
     N = ndims(v)
     if N == 2
-        return v.parent.dimnames[1:N]
+        return String.(v.parent.dimnames[1:N])
     elseif v.name == :x
-        return (v.parent.dimnames[1],)
+        return (String(v.parent.dimnames[1]),)
     else
-        return  (v.parent.dimnames[2],)
+        return  (String(v.parent.dimnames[2]),)
     end
 end
 
