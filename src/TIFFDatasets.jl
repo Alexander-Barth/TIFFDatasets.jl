@@ -38,6 +38,8 @@ struct TIFFDataset{T,N,Ttrans,Tmaskingvalue} <: AbstractDataset
     dim::OrderedDict{String,Int64}
     attrib::OrderedDict{String,Any}
     maskingvalue::Tmaskingvalue
+    metadata::OrderedDict{SubString{String}, SubString{String}}
+    metadata_domain::OrderedDict{String, OrderedDict{SubString{String}, SubString{String}}}
 end
 
 const Dataset = TIFFDataset
@@ -125,6 +127,12 @@ function cf_crs_attributes!(crs_wkt,attrib; geotransform = nothing)
     return attrib
 end
 
+
+# return the metadata as a ordered dictionary of key-value pairs
+function _metadata(dataset,domain="")
+    key_values = (split(item,'=',limit=2) for item in ArchGDAL.metadata(dataset; domain))
+    return OrderedDict(key_values)
+end
 
 """
     ds = TIFFDataset(fname::AbstractString; varname = "band",
@@ -243,6 +251,18 @@ function TIFFDataset(fname::AbstractString; varname = "band",
         dim[dimnames[3]] = nraster
     end
 
+
+    metadata = _metadata(dataset)
+    domains = filter(!=(""), ArchGDAL.metadatadomainlist(dataset))
+    domain_metadata = OrderedDict((domain => _metadata(dataset,domain)) for domain in domains)
+
+    for (k,v) in metadata
+        # ignore attributes specific to a variable
+        if !(k in ("add_offset","scale_factor","_FillValue","long_name","valid_range"))
+            attrib[k] = v
+        end
+    end
+
     return TIFFDataset{T,N,typeof(trans),typeof(maskingvalue)}(
         fname,
         dataset,
@@ -257,6 +277,8 @@ function TIFFDataset(fname::AbstractString; varname = "band",
         dim,
         attrib,
         maskingvalue,
+        metadata,
+        domain_metadata
     )
 end
 
@@ -274,7 +296,7 @@ end
 
 Base.keys(ds::Dataset) = varnames(ds)
 
-function cf_variable_attrib!(band,attrib)
+function cf_variable_attrib!(ds::TIFFDataset{T},band,attrib) where T
     fillvalue = ArchGDAL.getnodatavalue(band)
     if !isnothing(fillvalue)
         attrib["_FillValue"] = fillvalue
@@ -289,6 +311,23 @@ function cf_variable_attrib!(band,attrib)
     if scale_factor != 1
         attrib["scale_factor"] = scale_factor
     end
+
+    long_name = get(ds.metadata,"long_name",nothing)
+    if !isnothing(long_name)
+       attrib["long_name"] = long_name
+    end
+
+    valid_range = get(ds.metadata,"valid_range",nothing)
+    if !isnothing(valid_range)
+        vr = valid_range
+        try
+            vr = parse.(T,split(vr,','))
+        catch
+            @warn "cannot parse valid range ", valid_range
+        end
+        attrib["valid_range"] = vr
+    end
+
 end
 
 function variable(ds::Dataset{T,N},varname::SymbolOrString) where {T,N}
@@ -301,7 +340,7 @@ function variable(ds::Dataset{T,N},varname::SymbolOrString) where {T,N}
             attrib["grid_mapping"] = "crs"
         end
         band = ArchGDAL.getband(ds.dataset,1)
-        cf_variable_attrib!(band,attrib)
+        cf_variable_attrib!(ds,band,attrib)
         return Variable{T,N}(ds,0,attrib)
     elseif (startswith(string(varname),string(ds.varname))) && (N == 2)
         if geo_ref
@@ -309,7 +348,7 @@ function variable(ds::Dataset{T,N},varname::SymbolOrString) where {T,N}
         end
         index = parse(Int,replace(string(varname),string(ds.varname)=>""))
         band = ArchGDAL.getband(ds.dataset,index)
-        cf_variable_attrib!(band,attrib)
+        cf_variable_attrib!(ds,band,attrib)
         return Variable{T,N}(ds,index,attrib)
     elseif (vn == :crs) && geo_ref
         cf_crs_attributes!(ds.crs_wkt,attrib; geotransform = ds.geotransform)

@@ -4,6 +4,7 @@ using Test
 @testset "TIFFDatasets.jl" begin
     include("test_cf.jl")
     include("test_nodata.jl")
+    include("test_attrib.jl")
 end
 
 #=
