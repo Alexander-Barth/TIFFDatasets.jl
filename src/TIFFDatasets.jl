@@ -12,6 +12,7 @@ import CommonDataModel:
     dim,
     dimnames,
     maskingvalue,
+    MFDataset,
     name,
     path,
     variable,
@@ -135,7 +136,7 @@ function _metadata(dataset,domain="")
 end
 
 """
-    ds = TIFFDataset(fname::AbstractString; varname = "band",
+    ds = TIFFDataset(fname::AbstractString,mode = "r"; varname = "band",
                      projection = "EPSG:4326",
                      catbands = false,
                      dimnames = ("cols","rows","bands"))
@@ -213,7 +214,7 @@ Reference:
 * [1] [GDAL GeoTransform](https://gdal.org/tutorials/geotransforms_tut.html#transformation-from-image-coordinate-space-to-georeferenced-coordinate-space)
 
 """
-function TIFFDataset(fname::AbstractString; varname = "band",
+function TIFFDataset(fname::AbstractString, mode = "r"; varname = "band",
                      projection = "EPSG:4326",
                      catbands = false,
                      dimnames = ("cols","rows","bands"),
@@ -222,6 +223,11 @@ function TIFFDataset(fname::AbstractString; varname = "band",
                      ),
                      maskingvalue = missing,
                      )
+
+    if mode != "r"
+        error("""only mode "r" is currently supported""")
+    end
+
     dataset = ArchGDAL.read(fname)
     width = ArchGDAL.width(dataset)
     height = ArchGDAL.height(dataset)
@@ -484,6 +490,31 @@ Base.getindex(v::CRS,indices...) = 0
 
 dimnames(v::CRS) = ()
 name(v::CRS) = "crs"
+
+
+"""
+    TIFFDataset(fnames::AbstractVector{<:AbstractString};
+                aggdim=name, isnewdim=false)
+
+Concatenate TIFF files `fnames` along the dimension specified with `aggdim`.
+The parameter `isnewdim` must be true for new dimensions not initially present
+in the file.
+See CommonDataModel.MFDataset for more information of the arguments.
+
+"""
+TIFFDataset(fnames::AbstractVector{<:AbstractString}, args...; kwargs...) =
+   MFDataset(TIFFDataset,fnames, args...; kwargs...)
+
+
+function TIFFDataset(f::Function, args...; kwargs...)
+    ds = TIFFDataset(args...; kwargs...)
+    try
+        f(ds)
+    finally
+        @debug "closing TIFFDataset" args
+        close(ds)
+    end
+end
 
 export TIFFDataset
 
