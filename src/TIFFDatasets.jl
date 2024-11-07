@@ -385,7 +385,9 @@ Base.size(v::Variable{T,N}) where {T,N} = (v.parent.width,v.parent.height,v.pare
 
 
 @inline function Base.getindex(v::Variable{T,2},ij...) where T
-    return ArchGDAL.getband(v.parent.dataset, v.index)[ij...]
+    tmp = ArchGDAL.getband(v.parent.dataset, v.index)
+    @debug "type of ArchGDAL.getband" typeof(tmp)
+    return tmp[ij...]
 end
 
 @inline function Base.getindex(v::Variable{T,3},i,j,k::Integer) where T
