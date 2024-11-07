@@ -5,6 +5,7 @@ using Test
     include("test_cf.jl")
     include("test_nodata.jl")
     include("test_attrib.jl")
+    include("test_multifile.jl")
 end
 
 #=
