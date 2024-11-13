@@ -1,11 +1,12 @@
 [![Build Status](https://github.com/Alexander-Barth/TIFFDatasets.jl/workflows/CI/badge.svg)](https://github.com/Alexander-Barth/TIFFDatasets.jl/actions)
 [![codecov](https://codecov.io/github/Alexander-Barth/TIFFDatasets.jl/graph/badge.svg?token=IHIF42JVKU)](https://codecov.io/github/Alexander-Barth/TIFFDatasets.jl)
+[![documentation stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://alexander-barth.github.io/TIFFDatasets.jl/stable/)
 [![documentation dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://alexander-barth.github.io/TIFFDatasets.jl/dev/)
 
 # TIFFDatasets
 
 
-This package implements the [CommonDataModel.jl](https://github.com/JuliaGeo/CommonDataModel.jl) interface for TIFF files, which means that the datasets can be accessed in the same way as netCDF files opened with [NCDatasets.jl](https://github.com/Alexander-Barth/NCDatasets.jl) or GRIB files opened with [GRIBDatasets](https://github.com/JuliaGeo/GRIBDatasets.jl). For GeoTIFF files the project information will be available as additional variables following the [CF Conventions](https://cfconventions.org/cf-conventions/cf-conventions.html#use-of-the-crs-well-known-text-format).
+This package implements the [CommonDataModel.jl](https://github.com/JuliaGeo/CommonDataModel.jl) interface for TIFF files, which means that the datasets can be accessed in the same way as netCDF files opened with [NCDatasets.jl](https://github.com/Alexander-Barth/NCDatasets.jl), GRIB files opened with [GRIBDatasets](https://github.com/JuliaGeo/GRIBDatasets.jl) or Zarr files opened with [ZarrDatasets](https://github.com/JuliaGeo/ZarrDatasets.jl). For GeoTIFF files the project information will be available as additional variables following the [CF Conventions](https://cfconventions.org/cf-conventions/cf-conventions.html#use-of-the-crs-well-known-text-format).
 
 ```julia
 using TIFFDatasets
