@@ -16,11 +16,9 @@ using CommonDataModel: @select
 using ColorSchemes
 using Statistics
 
-# The data was originally available at [nrt3.modaps.eosdis.nasa.gov](https://nrt3.modaps.eosdis.nasa.gov/api/v2/content/archives/allData/61/MCDWD_L3_F2_NRT/2024/306/):
+# The data was originally available at [nrt3.modaps.eosdis.nasa.gov](https://nrt3.modaps.eosdis.nasa.gov/api/v2/content/archives/allData/61/MCDWD_L3_F2_NRT/):
 
 urls = [
-    #    "https://nrt3.modaps.eosdis.nasa.gov/api/v2/content/archives/allData/61/MCDWD_L3_F2_NRT/2024/306/MCDWD_L3_F2_NRT.A2024306.h17v05.061.tif",
-    #    "https://nrt3.modaps.eosdis.nasa.gov/api/v2/content/archives/allData/61/MCDWD_L3_F2_NRT/2024/306/MCDWD_L3_F2_NRT.A2024306.h18v05.061.tif",
     "https://data-assimilation.net/upload/Alex/TIFF/MCDWD_L3_F2_NRT.A2024306.h17v05.061.tif",
     "https://data-assimilation.net/upload/Alex/TIFF/MCDWD_L3_F2_NRT.A2024306.h18v05.061.tif",
 ];
