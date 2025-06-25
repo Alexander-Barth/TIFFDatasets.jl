@@ -33,7 +33,7 @@ test_show(ds["band1"],"grid_mapping")
 test_show(ds["band2"],"grid_mapping")
 
 @test_throws KeyError ds["does_not_exists"]
-@test ds["crs"][:] isa Integer
+@test ds["crs"][] isa Integer
 
 # convert to NetCDF
 ncfile = tempname()

@@ -22,6 +22,7 @@ using DataStructures: OrderedDict
 import GDAL
 import Proj
 import JSON3
+import DiskArrays
 
 const SymbolOrString = Union{AbstractString, Symbol}
 
@@ -44,7 +45,7 @@ struct TIFFDataset{T,N,Ttrans,Tmaskingvalue} <: AbstractDataset
 end
 
 const Dataset = TIFFDataset
-
+## DiskArray
 struct Variable{T,N} <: AbstractVariable{T,N} #AbstractArray{T,N}
     parent::TIFFDataset{T,N}
     index::Int64
@@ -390,28 +391,32 @@ Base.getindex(ds::Dataset,varname::Union{AbstractString, Symbol}) = cfvariable(d
 Base.size(v::Variable{T,N}) where {T,N} = (v.parent.width,v.parent.height,v.parent.nraster)[1:N]
 
 
-@inline function Base.getindex(v::Variable{T,2},ij...) where T
-    tmp = ArchGDAL.getband(v.parent.dataset, v.index)
-    @debug "type of ArchGDAL.getband" typeof(tmp)
-    return tmp[ij...]
+function DiskArrays.readblock!(v::Variable{T, 3},
+    aout,
+    indexes::Vararg{OrdinalRange, 3}) where {T}
+
+    band_index = indexes[3]
+    band_out = 1:length(band_index) 
+
+    for i in eachindex(band_index, band_out)
+        k = band_index[i]
+        k_out = band_out[i]
+        band = ArchGDAL.getband(v.parent.dataset, k)
+
+        aout[:,:,k_out] .= band[indexes[1], indexes[2]]
+    end
+
+    return nothing
 end
 
-@inline function Base.getindex(v::Variable{T,3},i,j,k::Integer) where T
-    return ArchGDAL.getband(v.parent.dataset, k)[i,j]
+function DiskArrays.readblock!(v::Variable{T, 2},
+    aout,
+    indexes::Vararg{OrdinalRange, 2}) where {T}
+
+    aout .= ArchGDAL.getband(v.parent.dataset, v.index)[indexes...]
+    return nothing
 end
 
-@inline function Base.getindex(v::Variable{T,3},i::Union{AbstractRange,Colon},j::Union{AbstractRange,Colon},k::AbstractRange) where T
-    return cat((v[i,j,k_] for k_ = k)...,dims=3)
-end
-
-@inline function Base.getindex(v::Variable{T,3},i,j,k::Colon) where T
-    return v[i,j,begin:end]
-end
-
-function Base.getindex(v::Variable{T,3},indices...) where T
-    # fall-back read-all, can be more efficient
-    return v[:,:,:][indices...]
-end
 
 dimnames(v::Variable) = String.(v.parent.dimnames[1:ndims(v)])
 
@@ -456,7 +461,7 @@ function dimnames(v::Coord)
     end
 end
 
-function Base.getindex(v::Coord{T,2},i::Integer,j::Integer) where T
+function _get_coord(v::Coord{T,2},i::Integer,j::Integer) where T
     ds = v.parent
     if v.name == :x
         return xy_geo(ds,i,j)[1]
@@ -474,7 +479,7 @@ function Base.getindex(v::Coord{T,2},i::Integer,j::Integer) where T
     end
 end
 
-function Base.getindex(v::Coord{T,1},i::Integer) where T
+function _get_coord(v::Coord{T,1},i::Integer) where T
     ds = v.parent
     if v.name == :x
         return xy_geo(ds,i,1)[1]
@@ -485,8 +490,52 @@ function Base.getindex(v::Coord{T,1},i::Integer) where T
     end
 end
 
+function DiskArrays.readblock!(v::Coord{T, 1},
+    aout,
+    indexes::Vararg{OrdinalRange, 1}) where {T}
+    
+    index = only(indexes)
+    index_out = 1:length(index)
+
+    for t in eachindex(index,index_out)
+        i = index[t]
+        i_out = index_out[t]
+        aout[i_out] = _get_coord(v,i)
+    end
+
+    return nothing
+end
+
+
+
+function DiskArrays.readblock!(v::Coord{T, 2},
+    aout,
+    indexes::Vararg{OrdinalRange, 2}) where {T}
+
+    indexes_out = ( 1:length(indexes[1]), 1:length(indexes[2]) )
+
+    for t1 in eachindex(indexes[1],indexes_out[1])
+        i = indexes[1][t1]
+        i_out = indexes_out[1][t1]
+        for t2 in eachindex(indexes[2],indexes_out[2])
+            j = indexes[2][t2]
+            j_out = indexes_out[2][t2]
+            aout[i_out,j_out] = _get_coord(v,i,j)
+        end
+    end
+
+    return nothing
+end
+
 Base.size(v::CRS) = ()
-Base.getindex(v::CRS,indices...) = 0
+
+function DiskArrays.readblock!(v::CRS,
+    aout,
+    indexes::Vararg{OrdinalRange, 0})
+
+    aout[] = 0
+    return nothing
+end
 
 dimnames(v::CRS) = ()
 name(v::CRS) = "crs"
@@ -515,6 +564,13 @@ function TIFFDataset(f::Function, args...; kwargs...)
         close(ds)
     end
 end
+
+DiskArrays.eachchunk(v::Variable{T,3}) where {T} = 
+    DiskArrays.GridChunks(v, (size(v)[1:2]...,1))
+DiskArrays.haschunks(v::Variable{T,3}) where {T} =  DiskArrays.Chunked()
+DiskArrays.haschunks(v::Variable) =  DiskArrays.Unchunked()
+DiskArrays.haschunks(v::Coord) = DiskArrays.Unchunked()
+DiskArrays.haschunks(v::CRS) = DiskArrays.Unchunked()
 
 export TIFFDataset
 
