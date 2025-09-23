@@ -23,6 +23,9 @@ import GDAL
 import Proj
 import JSON3
 
+import DiskArrays
+import DiskArrays: readblock!, writeblock!, eachchunk, haschunks
+
 const SymbolOrString = Union{AbstractString, Symbol}
 
 struct TIFFDataset{T,N,Ttrans,Tmaskingvalue} <: AbstractDataset
@@ -384,33 +387,40 @@ function variable(ds::Dataset{T,N},varname::SymbolOrString) where {T,N}
     end
 end
 
+DiskArrays.haschunks(v::Variable) = DiskArrays.Chunked()
+DiskArrays.eachchunk(v::Variable) = DiskArrays.GridChunks(v, size(v)[1:2])
 
 Base.getindex(ds::Dataset,varname::Union{AbstractString, Symbol}) = cfvariable(ds,varname)
 
 Base.size(v::Variable{T,N}) where {T,N} = (v.parent.width,v.parent.height,v.parent.nraster)[1:N]
 
 
-@inline function Base.getindex(v::Variable{T,2},ij...) where T
+@inline function readblock!(v::Variable{T,2},aout,ij::AbstractRange...) where T
     tmp = ArchGDAL.getband(v.parent.dataset, v.index)
     @debug "type of ArchGDAL.getband" typeof(tmp)
-    return tmp[ij...]
+    aout .= tmp[ij...]
 end
 
-@inline function Base.getindex(v::Variable{T,3},i,j,k::Integer) where T
-    return ArchGDAL.getband(v.parent.dataset, k)[i,j]
+@inline function readblock!(v::Variable{T,3},aout,i,j,k::Integer) where T
+    aout .= ArchGDAL.getband(v.parent.dataset, k)[i,j]
 end
 
-@inline function Base.getindex(v::Variable{T,3},i::Union{AbstractRange,Colon},j::Union{AbstractRange,Colon},k::AbstractRange) where T
-    return cat((v[i,j,k_] for k_ = k)...,dims=3)
+@inline function readblock!(v::Variable{T,3},aout,i::Union{AbstractRange,Colon},j::Union{AbstractRange,Colon},k::AbstractRange) where T
+    for k_ in k
+        readblock!(v,view(aout,:,:,k_),i,j,k_)
+    end
+    return aout
 end
 
-@inline function Base.getindex(v::Variable{T,3},i,j,k::Colon) where T
-    return v[i,j,begin:end]
+@inline function readblock!(v::Variable{T,3},aout,i,j,k::Colon) where T
+    readblock!(v,aout,i,j,axes(v,3))
 end
 
-function Base.getindex(v::Variable{T,3},indices...) where T
+function readblock!(v::Variable{T,3},aout,indices...) where T
     # fall-back read-all, can be more efficient
-    return v[:,:,:][indices...]
+    tmp = Array{T,3}(undef,size(v))
+    readblock!(v,tmp,:,:,:)
+    aout .= tmp[indices...]
 end
 
 dimnames(v::Variable) = String.(v.parent.dimnames[1:ndims(v)])
@@ -425,6 +435,18 @@ end
 
 
 name(v::Coord) = string(v.name)
+
+@inline function x_geo!(ds::Dataset,x_geo,i,j)
+    gt = ds.geotransform
+    shift = 0.5 # center
+    x_geo .= gt[1] .+ (i .- shift) .* gt[2] .+ (j .- shift) .* gt[3]
+end
+
+@inline function y_geo!(ds::Dataset,y_geo,i,j)
+    gt = ds.geotransform
+    shift = 0.5 # center
+    y_geo .= gt[4] .+ (i .- shift) * gt[5] .+ (j .- shift) .* gt[6]
+end
 
 
 @inline function xy_geo(ds::Dataset,i,j)
@@ -452,41 +474,46 @@ function dimnames(v::Coord)
     elseif v.name == :x
         return (String(v.parent.dimnames[1]),)
     else
-        return  (String(v.parent.dimnames[2]),)
+        return (String(v.parent.dimnames[2]),)
     end
 end
 
-function Base.getindex(v::Coord{T,2},i::Integer,j::Integer) where T
+function readblock!(v::Coord{T,2},aout,i,j) where T
     ds = v.parent
     if v.name == :x
-        return xy_geo(ds,i,j)[1]
+        x_geo(ds,aout,i,j')
     elseif v.name == :y
-        return xy_geo(ds,i,j)[2]
+        y_geo(ds,aout,i,j')
     else
         trans = v.parent.trans
-        lat,lon = trans(xy_geo(ds,i,j))
+        latlon = trans.(xy_geo.(Ref(ds),i,j'))
         # can there be a cleverer way?
         if v.name == :lon
-            return lon
+            aout .= getindex.(latlon,2)
         else
-            return lat
+            aout .= getindex.(latlon,1)
         end
     end
+
+    return aout
 end
 
-function Base.getindex(v::Coord{T,1},i::Integer) where T
+function readblock!(v::Coord{T,1},aout,i) where T
     ds = v.parent
     if v.name == :x
-        return xy_geo(ds,i,1)[1]
+        x_geo!(ds,aout,i,1)
     elseif v.name == :y
-        return xy_geo(ds,1,i)[2]
+        y_geo!(ds,aout,1,i)
     else
         throw(KeyError("unexpected $(v.name)"))
     end
+    return aout
 end
 
 Base.size(v::CRS) = ()
-Base.getindex(v::CRS,indices...) = 0
+function readblock!(v::CRS,aout,indices...)
+    aout .= 0
+end
 
 dimnames(v::CRS) = ()
 name(v::CRS) = "crs"
