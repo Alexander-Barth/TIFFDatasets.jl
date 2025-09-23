@@ -433,21 +433,7 @@ function name(v::Variable{T,N}) where {T,N}
     end
 end
 
-
 name(v::Coord) = string(v.name)
-
-@inline function x_geo!(ds::Dataset,x_geo,i,j)
-    gt = ds.geotransform
-    shift = 0.5 # center
-    x_geo .= gt[1] .+ (i .- shift) .* gt[2] .+ (j .- shift) .* gt[3]
-end
-
-@inline function y_geo!(ds::Dataset,y_geo,i,j)
-    gt = ds.geotransform
-    shift = 0.5 # center
-    y_geo .= gt[4] .+ (i .- shift) * gt[5] .+ (j .- shift) .* gt[6]
-end
-
 
 @inline function xy_geo(ds::Dataset,i,j)
     gt = ds.geotransform
@@ -455,6 +441,14 @@ end
     x_geo = gt[1] + (i-shift) * gt[2] + (j-shift) * gt[3]
     y_geo = gt[4] + (i-shift) * gt[5] + (j-shift) * gt[6]
     return (x_geo,y_geo)
+end
+
+@inline function x_geo!(ds::Dataset,x_geo,i,j)
+    x_geo .= getindex.(xy_geo.(Ref(ds),i,j'),1)
+end
+
+@inline function y_geo!(ds::Dataset,y_geo,i,j)
+    y_geo .= getindex.(xy_geo.(Ref(ds),i,j'),2)'
 end
 
 function Base.size(v::Coord)
