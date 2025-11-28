@@ -94,7 +94,7 @@ lat = ds["lat"][:,:];
 grid_mapping_name = ds["crs"].attrib["grid_mapping_name"]
 ```
 
-Using all bands as single 3D array can be done using `catbands = true`, for example:
+To load all bands as a single 3D array, set `catbands = true`. For example:
 
 ```julia
 ds = TIFFDataset(fname,catbands = true)
