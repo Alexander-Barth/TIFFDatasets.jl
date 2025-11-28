@@ -16,6 +16,9 @@ using CommonDataModel: @select
 using ColorSchemes
 using Statistics
 
+# store images as separated files
+CairoMakie.enable_only_mime!("png")
+
 # The data was originally available at [nrt3.modaps.eosdis.nasa.gov](https://nrt3.modaps.eosdis.nasa.gov/api/v2/content/archives/allData/61/MCDWD_L3_F2_NRT/):
 
 urls = [

@@ -13,7 +13,7 @@ Literate.markdown(
 
 makedocs(;
     modules=[TIFFDatasets],
-    repo="https://github.com/Alexander-Barth/TIFFDatasets.jl/blob/{commit}{path}#{line}",
+    repo=Documenter.Remotes.GitHub("Alexander-Barth", "TIFFDatasets.jl"),
     sitename="TIFFDatasets.jl",
     format=Documenter.HTML(;
         prettyurls=get(ENV, "CI", "false") == "true",

@@ -7,7 +7,7 @@ Literate = "98b081ad-f1c9-55d3-8b20-4c87d4299306"
 Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 
 [compat]
-CairoMakie = "0.12"
+CairoMakie = "0.15"
 ColorSchemes = "3"
 Documenter = "1"
 Literate = "2"
