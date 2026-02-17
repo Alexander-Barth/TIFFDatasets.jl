@@ -7,6 +7,7 @@
 
 
 This package implements the [CommonDataModel](https://github.com/JuliaGeo/CommonDataModel.jl) interface for georeferenced TIFF or JPEG 2000 files, which means that the datasets can be accessed in the same way as netCDF files opened with [NCDatasets](https://github.com/Alexander-Barth/NCDatasets.jl), GRIB files opened with [GRIBDatasets](https://github.com/JuliaGeo/GRIBDatasets.jl) or Zarr files opened with [ZarrDatasets](https://github.com/JuliaGeo/ZarrDatasets.jl). For GeoTIFF files the project information will be available as additional variables following the [CF Conventions](https://cfconventions.org/cf-conventions/cf-conventions.html#use-of-the-crs-well-known-text-format).
+While only geoTIFF and georeferenced JPEG 2000 files have been tested, other raster formats suppoted by [GDAL](https://gdal.org/en/stable/drivers/raster/index.html) might also work.
 
 ```julia
 using TIFFDatasets
