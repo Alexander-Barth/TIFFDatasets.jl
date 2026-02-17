@@ -144,8 +144,10 @@ end
                      catbands = false,
                      dimnames = ("cols","rows","bands"))
 
-Create a data set structure from the GeoTIFF file name `fname`
-using [ArchGDAL](https://github.com/yeesian/ArchGDAL.jl). The data variable will be called
+Create a data set structure from the file name `fname`
+using [ArchGDAL](https://github.com/yeesian/ArchGDAL.jl).
+The file format must be suppored GDAL for example GeoTIFF or georeferenced JPEG 2000 files.  
+The data variable will be called
 `varname` (followed by the band number).
 The dataset `ds` will also have the virtual variables `x`, `y` and `lon`, `lat`
 representing the projected coordinates (as defined in the GeoTIFF file) and the
