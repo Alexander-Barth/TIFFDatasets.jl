@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>MODIS/Aqua+Terra Global Flood Product · TIFFDatasets.jl</title><meta name="title" content="MODIS/Aqua+Terra Global Flood Product · TIFFDatasets.jl"/><meta property="og:title" content="MODIS/Aqua+Terra Global Flood Product · TIFFDatasets.jl"/><meta property="twitter:title" content="MODIS/Aqua+Terra Global Flood Product · TIFFDatasets.jl"/><meta name="description" content="Documentation for TIFFDatasets.jl."/><meta property="og:description" content="Documentation for TIFFDatasets.jl."/><meta property="twitter:description" content="Documentation for TIFFDatasets.jl."/><meta property="og:url" content="https://alexander-barth.github.io/TIFFDatasets.jl/examples/flood_example/"/><meta property="twitter:url" content="https://alexander-barth.github.io/TIFFDatasets.jl/examples/flood_example/"/><link rel="canonical" href="https://alexander-barth.github.io/TIFFDatasets.jl/examples/flood_example/"/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../">TIFFDatasets.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><span class="tocitem">Examples</span><ul><li class="is-active"><a class="tocitem" href>MODIS/Aqua+Terra Global Flood Product</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Examples</a></li><li class="is-active"><a href>MODIS/Aqua+Terra Global Flood Product</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>MODIS/Aqua+Terra Global Flood Product</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/Alexander-Barth/TIFFDatasets.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/Alexander-Barth/TIFFDatasets.jl/blob/main/examples/flood_example.jl" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="MODIS/AquaTerra-Global-Flood-Product"><a class="docs-heading-anchor" href="#MODIS/AquaTerra-Global-Flood-Product">MODIS/Aqua+Terra Global Flood Product</a><a id="MODIS/AquaTerra-Global-Flood-Product-1"></a><a class="docs-heading-anchor-permalink" href="#MODIS/AquaTerra-Global-Flood-Product" title="Permalink"></a></h1><p>In this example, we will download and visualize the <a href="https://cmr.earthdata.nasa.gov/search/concepts/C2019424090-LANCEMODIS.html">MODIS/Aqua+Terra Global Flood Product</a> for the Valencia region (Spain) on the 2d November, 2024.</p><p>The data has been also be downloaded from <a href="https://worldview.earthdata.nasa.gov">NASA World View</a>. Unfortunately, only the last 7 days are visible on this sites but the download links below are still available. On the NASA World View page, one can click on &quot;Add Layers&quot;, cloose &quot;Flood (3-Day Window)&quot; and confirm with &quot;Add Layer&quot;. To download the data for a different day, click on &quot;Data&quot; and download the &quot;MODIS/Aqua+Terra Global Flood Product L3 NRT 250m 3-day GeoTIFF&quot; product, set your area of interest and go to &quot;Download Via EarthData Search&quot;.</p><pre><code class="language-julia hljs">using Dates
+using TIFFDatasets
+using CairoMakie
+using CommonDataModel: @select
+using ColorSchemes
+using Statistics</code></pre><p>store images as separated files</p><pre><code class="language-julia hljs">CairoMakie.enable_only_mime!(&quot;png&quot;)</code></pre><p>The data was originally available at <a href="https://nrt3.modaps.eosdis.nasa.gov/api/v2/content/archives/allData/61/MCDWD_L3_F2_NRT/">nrt3.modaps.eosdis.nasa.gov</a>:</p><pre><code class="language-julia hljs">urls = [
+    &quot;https://data-assimilation.net/upload/Alex/TIFF/MCDWD_L3_F2_NRT.A2024306.h17v05.061.tif&quot;,
+    &quot;https://data-assimilation.net/upload/Alex/TIFF/MCDWD_L3_F2_NRT.A2024306.h18v05.061.tif&quot;,
+];</code></pre><p>Download the data if necessary</p><pre><code class="language-julia hljs">fnames = basename.(urls)
+
+if !all(isfile.(fnames))
+    download.(urls,fnames)
+end</code></pre><pre><code class="nohighlight hljs">2-element Vector{String}:
+ &quot;MCDWD_L3_F2_NRT.A2024306.h17v05.061.tif&quot;
+ &quot;MCDWD_L3_F2_NRT.A2024306.h18v05.061.tif&quot;</code></pre><p>Inspect the first geoTIFF file</p><pre><code class="language-julia hljs">ds = TIFFDataset(fnames[1],&quot;r&quot;)</code></pre><pre><code class="nohighlight hljs">Dataset: MCDWD_L3_F2_NRT.A2024306.h17v05.061.tif
+Group: /
+
+Dimensions
+   cols = 4800
+   rows = 4800
+
+Variables
+  lon   (4800 × 4800)
+    Datatype:    Float64 (Float64)
+    Dimensions:  cols × rows
+    Attributes:
+     standard_name        = longitude
+     units                = degrees_east
+
+  lat   (4800 × 4800)
+    Datatype:    Float64 (Float64)
+    Dimensions:  cols × rows
+    Attributes:
+     standard_name        = latitude
+     units                = degrees_north
+
+  x   (4800)
+    Datatype:    Float64 (Float64)
+    Dimensions:  cols
+    Attributes:
+     standard_name        = projection_x_coordinate
+
+  y   (4800)
+    Datatype:    Float64 (Float64)
+    Dimensions:  rows
+    Attributes:
+     standard_name        = projection_y_coordinate
+
+  crs  
+    Attributes:
+     longitude_of_prime_meridian = 0.0
+     semi_major_axis      = 6.3782064e6
+     inverse_flattening   = 294.978698213898
+     crs_wkt              = GEOGCS[&quot;Unknown datum based upon the Clarke 1866 ellipsoid&quot;,DATUM[&quot;Not specified (based on Clarke 1866 spheroid)&quot;,SPHEROID[&quot;Clarke 1866&quot;,6378206.4,294.978698213898,AUTHORITY[&quot;EPSG&quot;,&quot;7008&quot;]]],PRIMEM[&quot;Greenwich&quot;,0],UNIT[&quot;degree&quot;,0.0174532925199433,AUTHORITY[&quot;EPSG&quot;,&quot;9122&quot;]],AXIS[&quot;Latitude&quot;,NORTH],AXIS[&quot;Longitude&quot;,EAST]]
+     GeoTransform         = -10.0 0.0020833333333333333 0.0 40.0 0.0 -0.0020833333333333333
+
+  band1   (4800 × 4800)
+    Datatype:    Union{Missing, UInt8} (UInt8)
+    Dimensions:  cols × rows
+    Attributes:
+     grid_mapping         = crs
+     _FillValue           = 255.0
+     long_name            = NRT Combined Terra and Aqua MODIS Flood_2Day_250m
+     valid_range          = UInt8[0x00, 0x03]
+
+Global attributes
+  Conventions          = CF-1.8
+  ALGORITHMPACKAGEACCEPTANCEDATE = 2019-10-09
+  ALGORITHMPACKAGEMATURITYCODE = verified
+  ALGORITHMPACKAGENAME = MCDFLOOD
+  ALGORITHMPACKAGEVERSION = 6.1.0
+  ASSOCIATEDINSTRUMENTSHORTNAME.1 = MODIS
+  ASSOCIATEDPLATFORMSHORTNAME.1 = AMPM
+  ASSOCIATEDSENSORSHORTNAME.1 = MODIS
+  AUTOMATICQUALITYFLAG.1 = Passed
+  AUTOMATICQUALITYFLAGEXPLANATION.1 = Always Passed.
+  DAYNIGHTFLAG         = Day
+  description          = 2 day flood pixels detected from Terra and Aqua
+  no clouds removed
+  terrain shadow pixels masked
+  HAND pixels masked
+  threshold from table, minimum of 2
+Flag values:
+    255 : Insufficient data
+    0 : No water
+    1 : Water (matches standard reference water)
+    2 : Recurring flood (expected seasonal flood)
+    3 : Flood (unusual)
+
+  DESCRREVISION        = 6.1.4
+  EASTBOUNDINGCOORDINATE = 0.000000
+  EQUATORCROSSINGDATE.1 = 0
+  EQUATORCROSSINGLONGITUDE.1 = 0
+  EQUATORCROSSINGTIME.1 = 0
+  EXCLUSIONGRINGFLAG   = N
+  GRINGPOINTLATITUDE   = 40, 40, 30, 30
+  GRINGPOINTLONGITUDE  = -10, 0, 0, -10
+  GRINGPOINTSEQUENCENO = 1, 2, 3, 4
+  HDFEOSVersion        = HDFEOS_V2.20
+  HORIZONTALTILENUMBER = 17
+  identifier_product_doi = 10.5067/MODIS/MCDWD_L3_NRT.061
+
+  identifier_product_doi_authority = http://dx.doi.org
+
+  INPUTPOINTER         = MCDWD_IHMA.A2023001.h17v05.001.img,MCDWD_IRWMA.A2023001.h17v05.001.img,MCDWD_L3_NRT.A2024305.h17v05.061.2024306060718.hdf,MODWDLGA_NRT.A2024306.0905.h17v05.061.2024306103428.hdf,MODWDLGA_NRT.A2024306.1040.h17v05.061.2024306115011.hdf,MODWDLGA_NRT.A2024306.1045.h17v05.061.2024306114951.hdf,MODWD_ITSM.A2010022.h17v05.001.img,MYDWDLGA_NRT.A2024306.1415.h17v05.061.2024306152549.hdf,MYDWDLGA_NRT.A2024306.1420.h17v05.061.2024306152510.hdf,MYDWD_ITSM.A2010022.h17v05.001.img
+  INSTRUMENTNAME       = Moderate-Resolution Imaging SpectroRadiometer
+  LOCALGRANULEID       = MCDWD_L3_NRT.A2024306.h17v05.061.2024307013418.hdf
+  LOCALVERSIONID       = 6.1.4
+  LONGNAME             = MODIS/Aqua+Terra Flood Map Daily L3 Global 250m LLL Grid NRT
+  NORTHBOUNDINGCOORDINATE = 40.000000
+  ORBITNUMBER.1        = 0
+  PGEVERSION           = 6.1.4
+  PROCESSINGCENTER     = MODAPS
+  PROCESSINGENVIRONMENT = Linux minion20312 5.4.0-1099-fips #109-Ubuntu SMP Tue Apr 30 14:07:22 UTC 2024 x86_64 x86_64 x86_64 GNU/Linux
+  PRODUCTIONDATETIME   = 2024-11-02T01:34:18
+  PRODUCTIONHISTORY    = PGE159N:6.1.4;
+  QAPERCENTCLOUDCOVER  = 0
+  QAPERCENTCLOUDSHADOW = 0
+  QAPERCENTMISSINGDATA = 0
+  QAPERCENTOUTOFBOUNDSDATA = 0
+  RANGEBEGINNINGDATE   = 2024-11-01
+  RANGEBEGINNINGTIME   = 00:00:00
+  RANGEENDINGDATE      = 2024-11-02
+  RANGEENDINGTIME      = 00:00:00
+  REPROCESSINGACTUAL   = Near Real Time
+  REPROCESSINGPLANNED  = further update is anticipated
+  SCIENCEQUALITYFLAG.1 = Not Investigated
+  SCIENCEQUALITYFLAGEXPLANATION.1 = 0
+  SHORTNAME            = MCDWD_L3_NRT
+  SOUTHBOUNDINGCOORDINATE = 30.000000
+  TileID               = 61017005
+  units                = none
+  VERSIONID            = 61
+  VERTICALTILENUMBER   = 05
+  WESTBOUNDINGCOORDINATE = -10.000000
+  AREA_OR_POINT        = Area
+</code></pre><p>The size of the data array <code>band1</code>:</p><pre><code class="language-julia hljs">size(ds[&quot;band1&quot;])</code></pre><pre><code class="nohighlight hljs">(4800, 4800)</code></pre><p>Concatenate two geoTIFF files along the <code>cols</code> dimension (columns)</p><pre><code class="language-julia hljs">ds = TIFFDataset(fnames,aggdim = &quot;cols&quot;);</code></pre><p>The band1 array is now twice as large:</p><pre><code class="language-julia hljs">size(ds[&quot;band1&quot;])</code></pre><pre><code class="nohighlight hljs">(9600, 4800)</code></pre><p>Make a virtual subset based on coordinate values using longitude (x) and latitude (y)</p><pre><code class="language-julia hljs">ds2 = @select(ds,-1 &lt;= x &lt;= 0.3 &amp;&amp; 38.1 &lt;= y &lt;= 39.53);</code></pre><p>Load all the data</p><pre><code class="language-julia hljs">band1 = ds2[&quot;band1&quot;][:,:];
+lon = ds2[&quot;lon&quot;][:,:];
+lat = ds2[&quot;lat&quot;][:,:];</code></pre><p>Extract the attribute &quot;production date time&quot; for the metadata</p><pre><code class="language-julia hljs">datetime = DateTime(ds.attrib[&quot;PRODUCTIONDATETIME&quot;])</code></pre><pre><code class="nohighlight hljs">2024-11-02T01:34:18</code></pre><p>Make a plot</p><pre><code class="language-julia hljs">title = &quot;surface water &quot; * Dates.format(datetime,&quot;yyyy-mm-dd&quot;)
+
+fig = Figure(size=(800,500));
+ga = Axis(fig[1, 1]; title = title,
+          xlabel = &quot;longitude&quot;,
+          ylabel = &quot;latitude&quot;,
+          aspect = AxisAspect(1/cosd(mean(lat))))
+xlims!(ga,extrema(lon))
+ylims!(ga,extrema(lat))
+s = surface!(ga,lon,lat,band1,
+             shading = NoShading,
+             colormap = cgrad(ColorScheme([colorant&quot;sandybrown&quot;,
+                                           colorant&quot;lightblue&quot;,
+                                           colorant&quot;darkred&quot;,
+                                           colorant&quot;red&quot;]),
+                              4, categorical = true),
+             colorrange = (-0.5, 3.5))
+Colorbar(fig[1,2],s,ticks = 0:3)
+fig</code></pre><p><img src="../flood_example-25.png" alt/></p><p>Load the <code>&quot;description&quot;</code> attribute</p><pre><code class="language-julia hljs">println(ds.attrib[&quot;description&quot;])</code></pre><pre><code class="nohighlight hljs">2 day flood pixels detected from Terra and Aqua
+  no clouds removed
+  terrain shadow pixels masked
+  HAND pixels masked
+  threshold from table, minimum of 2
+Flag values:
+    255 : Insufficient data
+    0 : No water
+    1 : Water (matches standard reference water)
+    2 : Recurring flood (expected seasonal flood)
+    3 : Flood (unusual)
+
+</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../">« Home</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a>, <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a></p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.16.1 on <span class="colophon-date" title="Tuesday 17 February 2026 12:03">Tuesday 17 February 2026</span>. Using Julia version 1.12.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
