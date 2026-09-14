@@ -21,7 +21,7 @@ import CommonDataModel:
 using DataStructures: OrderedDict
 import GDAL
 import Proj
-import JSON3
+import JSON
 
 import DiskArrays
 import DiskArrays: readblock!, writeblock!, eachchunk, haschunks
@@ -90,7 +90,7 @@ function cf_crs_attributes!(crs_wkt,attrib; geotransform = nothing)
     grid_mapping_name = nothing
 
     #pp = Proj.proj_create_from_wkt(crs_wkt)
-    #pj = JSON3.read(Proj.proj_as_projjson(pp))
+    #pj = JSON.parse(Proj.proj_as_projjson(pp))
     #@show pj[:coordinate_system][:axis][1][:unit]
 
     if !isnothing(gdal_projection)
@@ -146,7 +146,7 @@ end
 
 Create a data set structure from the file name `fname`
 using [ArchGDAL](https://github.com/yeesian/ArchGDAL.jl).
-The file format must be suppored GDAL for example GeoTIFF or georeferenced JPEG 2000 files.  
+The file format must be suppored GDAL for example GeoTIFF or georeferenced JPEG 2000 files.
 The data variable will be called
 `varname` (followed by the band number).
 The dataset `ds` will also have the virtual variables `x`, `y` and `lon`, `lat`
